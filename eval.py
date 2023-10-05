@@ -31,7 +31,7 @@ def main(args):
         assert os.path.isfile(args.ckpt), "CKPT file does not exist!"
         ckpt_file = args.ckpt
     else:
-        assert os.path.isdir(args.ckpt), "CKPT file folder does not exist!"
+        assert os.path.isdir(args.ckpt), f"CKPT file folder does not exist: {args.ckpt}"
         if args.epoch > 0:
             ckpt_file = os.path.join(
                 args.ckpt, 'epoch_{:03d}.pth.tar'.format(args.epoch)

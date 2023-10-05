@@ -9,8 +9,8 @@ from torch.nn import functional as F
 from .datasets import register_dataset
 from .data_utils import truncate_feats
 
-@register_dataset("ego4d")
-class EGO4DDataset(Dataset):
+@register_dataset("egoexo")
+class EgoExoDataset(Dataset):
     def __init__(
         self,
         is_training,     # if in training mode
@@ -63,7 +63,7 @@ class EGO4DDataset(Dataset):
 
         # load database and select the subset
         dict_db, label_dict = self._load_json_db(self.json_file)
-        assert len(label_dict) == num_classes
+        # TODO: assert len(label_dict) == num_classes
         self.data_list = dict_db
         self.label_dict = label_dict
 
@@ -133,12 +133,18 @@ class EGO4DDataset(Dataset):
                 segments = None
                 labels = None
 
+            feature_path = value.get("feature_path")
+            if not feature_path:
+                # Bypass?
+                continue
+
             dict_db += ({'id': key,
                          'fps' : fps,
                          'duration' : duration,
                          'segments' : segments,
                          'labels' : labels,
                          'offset': value.get('offset'), # only for test
+                         'feature_path': feature_path,
             }, )
 
         return dict_db, label_dict
@@ -157,8 +163,13 @@ class EGO4DDataset(Dataset):
             folder, self.file_prefix + video_item['id'] + self.file_ext
         ) for folder in self.feat_folder]
         feats = np.concatenate(
-            [np.load(name).astype(np.float32) for name in filenames], axis=1
+            [
+                torch.load(name).squeeze(1).numpy()
+                # np.load(name).astype(np.float32) 
+                for name in filenames
+            ], axis=1
         )
+        assert len(feats.shape) == 2, f"Unexpected feature shape?! {feats.shape}"
 
         # deal with downsampling (= increased feat stride)
         feats = feats[::self.downsample_rate, :]

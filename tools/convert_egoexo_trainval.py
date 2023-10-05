@@ -24,7 +24,7 @@ This folder
 
 # full-video features downloaded from Ego4D website
 slowfast_dir = 'features/slowfast8x8_r101_k400'
-omnivore_dir = 'features/omnivore_video_swinl'
+omnivore_dir = '/mnt/nas/datasets/egoexo-features/slowfast'
 
 # annotation files downloaded from Ego4D website
 train_annot_path = 'annotations/moments_train.json'
@@ -72,15 +72,15 @@ for video in videos:
         subset = 'validation'
 
     # load video features
-    slowfast_path = os.path.join(slowfast_dir, vid + '.pt')
+    # slowfast_path = os.path.join(slowfast_dir, vid + '.pt')
     omnivore_path = os.path.join(omnivore_dir, vid + '.pt')
     # skip video if feature does not exist
-    if not os.path.exists(slowfast_path):
-        print('> slowfast feature missing')
+    # if not os.path.exists(slowfast_path):
+    #     print('> slowfast feature missing')
     if not os.path.exists(omnivore_path):
         print('> omnivore feature missing')
         continue
-    slowfast_video = torch.load(slowfast_path).numpy()
+    # slowfast_video = torch.load(slowfast_path).numpy()
     omnivore_video = torch.load(omnivore_path).numpy()
 
     # parse clip annotations
@@ -113,62 +113,62 @@ for video in videos:
         # save clip features
         si = (sf - prepend_frames) // stride
         ei = (ef + append_frames - clip_size) // stride
-        if ei > len(slowfast_video):
-            raise ValueError('end index exceeds slowfast feature length')
+        # if ei > len(slowfast_video):
+        #     raise ValueError('end index exceeds slowfast feature length')
         if ei > len(omnivore_video):
             raise ValueError('end index exceeds omnivore feature length')
             
-        slowfast_clip = slowfast_video[si:ei]
+        # slowfast_clip = slowfast_video[si:ei]
         omnivore_clip = omnivore_video[si:ei]
-        np.save(
-            os.path.join(slowfast_out_dir, cid + '.npy'), 
-            slowfast_clip.astype(np.float32),
-        )
+        # np.save(
+        #     os.path.join(slowfast_out_dir, cid + '.npy'), 
+        #     slowfast_clip.astype(np.float32),
+        # )
         np.save(
             os.path.join(omnivore_out_dir, cid + '.npy'), 
             omnivore_clip.astype(np.float32),
         )
         
-        annotations = []
+        # annotations = []
 
-        # parse annotations from different annotators
-        annotators = clip['annotations']
-        for annotator in annotators:
+        # # parse annotations from different annotators
+        # annotators = clip['annotations']
+        # for annotator in annotators:
             
-            # parse action items
-            items = annotator['labels']
-            for item in items:
-                # skip items not from primary categories
-                if not item['primary']:
-                    continue
+        #     # parse action items
+        #     items = annotator['labels']
+        #     for item in items:
+        #         # skip items not from primary categories
+        #         if not item['primary']:
+        #             continue
                 
-                ssi = item['video_start_time'] - ss + prepend_sec
-                esi = item['video_end_time'] - ss + prepend_sec
-                sfi = item['video_start_frame'] - sf + prepend_frames
-                efi = item['video_end_frame'] - sf + prepend_frames
+        #         ssi = item['video_start_time'] - ss + prepend_sec
+        #         esi = item['video_end_time'] - ss + prepend_sec
+        #         sfi = item['video_start_frame'] - sf + prepend_frames
+        #         efi = item['video_end_frame'] - sf + prepend_frames
                 
-                # filter out very short actions
-                if esi - ssi < 0.25:
-                    continue
+        #         # filter out very short actions
+        #         if esi - ssi < 0.25:
+        #             continue
                 
-                label = item['label']
-                annotations += [{
-                    'label': label,
-                    'segment': [round(ssi, 2), round(esi, 2)],
-                    'segment(frames)': [sfi, efi],
-                    'label_id': label_map[label],
-                }]
+        #         label = item['label']
+        #         annotations += [{
+        #             'label': label,
+        #             'segment': [round(ssi, 2), round(esi, 2)],
+        #             'segment(frames)': [sfi, efi],
+        #             'label_id': label_map[label],
+        #         }]
 
-        if len(annotations) == 0:
-            continue
+        # if len(annotations) == 0:
+        #     continue
 
-        database[cid] = {
-            'subset': subset,
-            'duration': round(duration, 2),
-            'fps': round(fps, 2),
-            'annotations': annotations,
-        }
+        # database[cid] = {
+        #     'subset': subset,
+        #     'duration': round(duration, 2),
+        #     'fps': round(fps, 2),
+        #     'annotations': annotations,
+        # }
 
-    out = {'version': 'v1', 'database': database}
-    with open(annot_out_path, 'w') as f:
-        json.dump(out, f)
+    # out = {'version': 'v1', 'database': database}
+    # with open(annot_out_path, 'w') as f:
+    #     json.dump(out, f)
